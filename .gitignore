@@ -1,0 +1,81 @@
+# Python
+*.py[cod]
+__pycache__/
+*.so
+*.egg
+*.egg-info/
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Byte-compiled / optimized / DLL files
+*.pyc
+*.pyo
+*.pyd
+*.pyo
+
+# Caches
+*.cache
+*.log
+*.sqlite3
+
+# Testing and coverage reports
+.coverage
+.tox/
+.cache/
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Environments
+.env
+.env.*
+
+# mypy
+.mypy_cache/
+
+# Logs
+logs/
+*.log
+
+# VS Code specific
+.vscode/
+
+# PyCharm specific
+.idea/
+
+# Alembic migrations
+alembic/versions/*.pyc
+alembic/versions/*.pyc
+alembic/versions/__pycache__/
+
+# Database
+*.db
+*.sqlite3
+
+# System specific
+.DS_Store
+Thumbs.db
+
+# Uvicorn specific (for dev servers)
+*.pid
+*.sock
+
+# JetBrains Rider (if used)
+.idea/
+
+# Git
+.git/
+
+# Docker (if applicable)
+docker-compose.override.yml
