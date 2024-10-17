@@ -4,7 +4,8 @@ from sqlalchemy import pool
 from alembic import context
 
 # Importa el modelo base que contiene la metadata
-from app.services.users.models import Base  # Ajusta esto a tu estructura
+from app.services.users.models import Base
+from app.services.events.models import Base  
 from app.core.config import settings
 
 # Configuración de Alembic
