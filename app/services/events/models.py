@@ -9,10 +9,11 @@ class Event(Base):
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, index=True)
     name = Column(String)
+    description = Column(String, nullable=True)
     starts_at = Column(DateTime)
     ends_at = Column(DateTime)
     password = Column(String)
-    isActive = Column(Boolean, default=False)
+    is_active = Column(Boolean, nullable=True, default=False)
 
     quests = relationship("Quest", back_populates="event")
 
