@@ -11,3 +11,5 @@ pydantinc[email]
 bcryptpip
 python-multipart
 psycopg2-binary
+fastapi_utils[all]
+celery[redis]

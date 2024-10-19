@@ -1,7 +1,12 @@
+import logging
+from celery import shared_task
+from celery.result import AsyncResult
 from sqlalchemy.orm import Session
+
+from app.core.db import get_db
 from .models import Event, Quest
 from uuid import UUID
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 # CRUD para Event
 def create_event(db: Session, event_data):
@@ -16,6 +21,18 @@ def get_event_by_id(db: Session, event_id: UUID):
 
 def get_all_events(db: Session):
     return db.query(Event).all()
+
+def get_events_starting_now(db: Session):
+    current_time = datetime.now(timezone.utc)
+    window_start = current_time - timedelta(seconds=30)
+    window_end = current_time + timedelta(seconds=60)  
+    events = db.query(Event).filter(
+        Event.is_active == False,
+        Event.starts_at >= window_start,
+        Event.starts_at <= window_end
+    ).all()
+    
+    return events
 
 def update_event(db: Session, event_id: UUID, event_data: dict):
     event = db.query(Event).filter(Event.id == event_id).first()

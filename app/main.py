@@ -1,6 +1,12 @@
+from datetime import datetime
+import logging
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.core.security import get_current_user, is_admin
+from fastapi_utils.tasks import repeat_every
+from sqlalchemy.orm import Session
+from app.core.db import SessionLocal
+from app.core.security import is_admin
+from app.services.events.repository import get_events_starting_now
 from app.services.users.models import Person
 from .services.users.routes import router as user_router
 from .services.events.routes import router as events_router
@@ -15,6 +21,26 @@ app.add_middleware(
     allow_methods=["*"],  # Permitir todos los métodos (GET, POST, etc.)
     allow_headers=["*"],  # Permitir todos los headers
 )
+
+logging.basicConfig(level=logging.INFO)
+
+@app.on_event("startup")
+@repeat_every(seconds=60)  # Revisa cada 60 segundos
+def activate_events_task():
+    
+    # Crear manualmente la sesión de la base de datos
+    db: Session = SessionLocal()
+    
+    try:
+        # Obtener eventos que deben empezar en este momento
+        events = get_events_starting_now(db)
+        
+        for event in events:
+            event.is_active = True
+            db.commit()
+    
+    finally:
+        db.close() 
 
 @app.get("/me")
 def read_users_me(current_user: Person = Depends(is_admin)):

@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import UUID, Boolean, Column, DateTime, String, ForeignKey
+from sqlalchemy import UUID, Boolean, Column, DateTime, String, ForeignKey, func
 from sqlalchemy.orm import relationship
 from app.core.db import Base
 
@@ -10,10 +10,11 @@ class Event(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, index=True)
     name = Column(String)
     description = Column(String, nullable=True)
-    starts_at = Column(DateTime)
-    ends_at = Column(DateTime)
+    starts_at = Column(DateTime(timezone=True), default=func.now())
+    ends_at = Column(DateTime(timezone=True), default=func.now())
     password = Column(String)
     is_active = Column(Boolean, nullable=True, default=False)
+    task_id = Column(String, nullable=True)
 
     quests = relationship("Quest", back_populates="event")
 

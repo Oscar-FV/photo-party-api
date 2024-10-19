@@ -1,0 +1,3 @@
+redis-server
+python -m celery -A app.celery_app worker --loglevel=info
+uvicorn app.main:app --reload

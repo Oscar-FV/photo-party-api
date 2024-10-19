@@ -26,19 +26,14 @@ async def notify_event_active(event_id: UUID):
 async def event_websocket(websocket: WebSocket, event_id: UUID, db: Session = Depends(get_db)):
     await websocket.accept()
     connected_clients.append(websocket)
-
+    
     try:
         while True:
-            # Regularly check if the event has become active
-            await asyncio.sleep(5)  # Check every 5 seconds
+            await asyncio.sleep(30)  # Revisar el estado del evento cada 5 segundos
             event = get_event_by_id(db, event_id)
-            for client in connected_clients:
-                await client.send_text(f"Event {event_id} is not active")
-            if event and event.starts_at <= datetime.utcnow() and not event.is_active:
-                # Update the event to active in the database
-                event.is_active = True
-                db.commit()
-                await notify_event_active(event_id)  # Notify all clients
+            
+            if event and event.is_active:
+                await notify_event_active(event_id)
     except WebSocketDisconnect:
         connected_clients.remove(websocket)
         await websocket.close()
