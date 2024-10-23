@@ -25,14 +25,18 @@ if not os.path.exists(UPLOAD_FOLDER):
 
 app = FastAPI()
 
-
+origins = [
+    "http://localhost",
+    "http://localhost:8000",
+    "https://bcea-187-245-73-217.ngrok-free.app" 
+]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Cambia esto a los dominios que necesites permitir, o usa "*" para todos
+    allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],  # Permitir todos los métodos (GET, POST, etc.)
-    allow_headers=["*"],  # Permitir todos los headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
