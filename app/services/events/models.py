@@ -2,6 +2,7 @@ import uuid
 from sqlalchemy import UUID, Boolean, Column, DateTime, String, ForeignKey, func
 from sqlalchemy.orm import relationship
 from app.core.db import Base
+from ..posts.models import Post
 
 
 class Event(Base):
@@ -27,3 +28,4 @@ class Quest(Base):
     description = Column(String)
     
     event = relationship("Event", back_populates="quests")
+    posts = relationship("Post", back_populates="quest")

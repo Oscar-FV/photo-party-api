@@ -3,6 +3,7 @@ from sqlalchemy import UUID, Column, Integer, String, ForeignKey, Enum
 from sqlalchemy.orm import relationship
 from app.core.db import Base
 import enum
+from ..posts.models import Post
 
 class RoleEnum(str, enum.Enum):
     admin = "admin"
@@ -30,3 +31,4 @@ class User(Base):
     
     # Relación con la tabla Person
     person = relationship("Person", back_populates="user")
+    posts = relationship("Post", back_populates="user")

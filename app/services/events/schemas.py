@@ -22,6 +22,9 @@ class QuestLK(BaseModel):
     id: UUID
     name: str
     description: str
+    
+class QuestUser(QuestLK):
+    is_completed: bool
         
 class EventResponse(BaseModel):
     id: UUID

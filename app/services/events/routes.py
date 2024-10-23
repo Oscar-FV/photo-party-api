@@ -6,13 +6,13 @@ from datetime import datetime
 import asyncio
 
 from app.core.db import get_db
+from app.services.users.schemas import CurrentUser
 from .repository import (
-    create_event, get_event_by_id, get_all_events, update_event,
-    delete_event, create_quest, get_quests_by_event, delete_quest
+    create_event, get_event_by_id, get_all_events, get_event_start, update_event,
+    delete_event
 )
 from .schemas import EventCreate, EventResponse, EventUpdate, QuestCreate, QuestResponse
-from app.core.security import get_current_user, is_admin
-from app.services.users.models import Person  
+from app.core.security import get_current_user 
 
 router = APIRouter()
 
@@ -39,49 +39,43 @@ async def event_websocket(websocket: WebSocket, event_id: UUID, db: Session = De
         await websocket.close()
 
 # Routes for Event
-@router.post("/", response_model=EventResponse)
-def create_event_route(event: EventCreate, db: Session = Depends(get_db), current_user: Person = Depends(is_admin)):
+@router.post("", response_model=EventResponse)
+def create_event_route(event: EventCreate, db: Session = Depends(get_db), current_user: CurrentUser = Depends(get_current_user)):
     return create_event(db, event.dict())
 
-@router.get("/{event_id}", response_model=EventResponse)
-def get_event(event_id: UUID, db: Session = Depends(get_db), current_user: Person = Depends(is_admin)):
-    event = get_event_by_id(db, event_id)
+@router.get("", response_model=List[EventResponse])
+def get_all_events_route(db: Session = Depends(get_db), current_user: CurrentUser = Depends(get_current_user)):
+    return get_all_events(db)
+
+@router.get("/event-info", response_model=EventResponse)
+def get_event(db: Session = Depends(get_db), current_user: CurrentUser = Depends(get_current_user)):
+    
+    event = get_event_by_id(db, current_user.event_id)
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
     return event
 
-@router.get("/", response_model=List[EventResponse])
-def get_all_events_route(db: Session = Depends(get_db), current_user: Person = Depends(get_current_user)):
-    return get_all_events(db)
+@router.get("/start-time", response_model=datetime)
+def get_event_start_time( db: Session = Depends(get_db), current_user: CurrentUser = Depends(get_current_user)):
+    event = get_event_start(db, current_user.event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    return event
 
-@router.put("/{event_id}/status")
-def update_event_route(event_id: UUID, event_data: EventUpdate, db: Session = Depends(get_db), current_user: Person = Depends(is_admin)):
+
+@router.put("/{event_id}")
+def update_event_route(event_id: UUID, event_data: EventUpdate, db: Session = Depends(get_db), current_user: CurrentUser = Depends(get_current_user)):
     updated_event = update_event(db, event_id, event_data.dict(exclude_unset=True))
     if not updated_event:
         raise HTTPException(status_code=404, detail="Event not found")
     return updated_event
 
 @router.delete("/{event_id}")
-def delete_event_route(event_id: UUID, db: Session = Depends(get_db), current_user: Person = Depends(is_admin)):
+def delete_event_route(event_id: UUID, db: Session = Depends(get_db), current_user: CurrentUser = Depends(get_current_user)):
     event = delete_event(db, event_id)
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
     return {"detail": "Event deleted"}
 
 
-# Routes for Quests
 
-@router.post("/quests", response_model=QuestResponse)
-def create_quest_route(quest: QuestCreate, db: Session = Depends(get_db), current_user: Person = Depends(is_admin)):
-    return create_quest(db, quest.dict())
-
-@router.get("/{event_id}/quests", response_model=List[QuestResponse])
-def get_quests(event_id: UUID, db: Session = Depends(get_db), current_user: Person = Depends(get_current_user)):
-    return get_quests_by_event(db, event_id)
-
-@router.delete("/quests/{quest_id}")
-def delete_quest_route(quest_id: UUID, db: Session = Depends(get_db), current_user: Person = Depends(is_admin)):
-    quest = delete_quest(db, quest_id)
-    if not quest:
-        raise HTTPException(status_code=404, detail="Quest not found")
-    return {"detail": "Quest deleted"}

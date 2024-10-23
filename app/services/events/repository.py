@@ -1,9 +1,12 @@
 import logging
 from celery import shared_task
 from celery.result import AsyncResult
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.core.db import get_db
+from app.services.events.schemas import QuestUser
+from app.services.posts.models import Post
 from .models import Event, Quest
 from uuid import UUID
 from datetime import datetime, timedelta, timezone
@@ -34,6 +37,9 @@ def get_events_starting_now(db: Session):
     
     return events
 
+def get_event_start(db: Session, event_id: UUID):
+    return db.query(Event).filter(Event.id == event_id).first().starts_at
+
 def update_event(db: Session, event_id: UUID, event_data: dict):
     event = db.query(Event).filter(Event.id == event_id).first()
     if not event:
@@ -62,6 +68,34 @@ def create_quest(db: Session, quest_data):
 
 def get_quests_by_event(db: Session, event_id: UUID):
     return db.query(Quest).filter(Quest.event_id == event_id).all()
+
+def get_quests_by_id(db: Session, quest_id: UUID):
+    return db.query(Quest).filter(Quest.id== quest_id).first()
+
+def get_all_quests_with_completion_status(db: Session, user_id: UUID, event_id: UUID):
+    all_quests = db.query(
+        Quest.id,
+        Quest.name,
+        Quest.description,
+        func.count(Post.id).label("posts_count")  # Contamos los posts del usuario en cada quest
+    ).outerjoin(
+        Post, (Post.quest_id == Quest.id) & (Post.user_id == user_id)  # Usamos outerjoin para incluir quests sin posts del usuario
+    ).group_by(
+        Quest.id
+    ).filter(Quest.event_id == event_id).all()
+
+# Mapeamos los resultados y añadimos `is_completed`
+    quests_with_status = [
+        QuestUser(
+            id=quest.id,
+            name=quest.name,
+            description=quest.description,
+            is_completed=quest.posts_count > 0  # Si tiene al menos un post, se marca como completada
+        )
+        for quest in all_quests
+    ]
+
+    return quests_with_status
 
 def delete_quest(db: Session, quest_id: UUID):
     quest = db.query(Quest).filter(Quest.id == quest_id).first()
