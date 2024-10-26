@@ -32,6 +32,8 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
     # Incluir event_id en el JWT si está presente en `data`
     if "event_id" in data:
         to_encode.update({"event_id": data["event_id"]})
+    
+    print(to_encode)
 
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt

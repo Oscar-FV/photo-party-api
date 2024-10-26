@@ -57,6 +57,7 @@ def get_event(db: Session = Depends(get_db), current_user: CurrentUser = Depends
 
 @router.get("/start-time", response_model=datetime)
 def get_event_start_time( db: Session = Depends(get_db), current_user: CurrentUser = Depends(get_current_user)):
+    print(current_user.event_id)
     event = get_event_start(db, current_user.event_id)
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")

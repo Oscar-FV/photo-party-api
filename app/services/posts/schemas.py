@@ -6,7 +6,7 @@ from uuid import UUID
 class PostCreate(BaseModel):
     quest_id: UUID
     image_url: str
-    caption: str = None
+    caption: Optional[str]
     
 
 class PostRespone(PostCreate):

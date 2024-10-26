@@ -46,24 +46,33 @@ def login_for_access_token(
     db.add(user)
     db.commit()
 
-    return {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
+    return {"event_id":event_id,"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
 
 @router.post("/refresh-token", response_model=TokenSchema)
-def refresh_access_token(request: TokenRefreshRequest, db: Session = Depends(get_db)):
+def refresh_access_token(
+    request: TokenRefreshRequest,
+    db: Session = Depends(get_db),
+    event_id: str = Query(None)  # Parámetro opcional para actualizar el `event_id`
+):
     # Buscar el usuario en la base de datos por el refresh token
     user = db.query(Person).filter(Person.refresh_token == request.refresh_token).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token")
     
-    # Generar un nuevo access token
+    # Generar un nuevo access token incluyendo `event_id` si está presente
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    token_data = {"sub": user.email}
+    
+    if event_id:
+        token_data["event_id"] = event_id  # Añadir `event_id` si está disponible
+    
     access_token = create_access_token(
-        data={"sub": user.email}, expires_delta=access_token_expires
+        data=token_data, expires_delta=access_token_expires
     )
     
-    # Devolver el nuevo access token, no es necesario devolver un nuevo refresh token
+    # Devolver el nuevo access token, manteniendo el refresh token actual
     return {
         "access_token": access_token,
-        "refresh_token": user.refresh_token,  # En caso de que quieras devolver el mismo refresh token
+        "refresh_token": user.refresh_token,  # Retornar el mismo refresh token
         "token_type": "bearer"
     }

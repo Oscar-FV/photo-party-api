@@ -26,6 +26,8 @@ class Quest(Base):
     event_id = Column(UUID(as_uuid=True), ForeignKey("events.id"))
     name = Column(String)
     description = Column(String)
+    image = Column(String)
+    color = Column(String)
     
     event = relationship("Event", back_populates="quests")
     posts = relationship("Post", back_populates="quest")

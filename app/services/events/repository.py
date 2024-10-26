@@ -1,4 +1,5 @@
 import logging
+import random
 from celery import shared_task
 from celery.result import AsyncResult
 from sqlalchemy import func
@@ -60,6 +61,15 @@ def delete_event(db: Session, event_id: UUID):
 
 # CRUD para Quest
 def create_quest(db: Session, quest_data):
+    # Selección aleatoria de color e imagen
+    colors = ["primary-500", "secondary-500", "accent-500", "card"]
+    images = ["bat", "ghost", "hat", "pumpkin"]
+
+    # Asignar valores aleatorios de color e imagen
+    quest_data["color"] = random.choice(colors)
+    quest_data["image"] = random.choice(images)
+
+    # Crear el nuevo quest con los datos actualizados
     new_quest = Quest(**quest_data)
     db.add(new_quest)
     db.commit()
@@ -77,25 +87,31 @@ def get_all_quests_with_completion_status(db: Session, user_id: UUID, event_id: 
         Quest.id,
         Quest.name,
         Quest.description,
-        func.count(Post.id).label("posts_count")  # Contamos los posts del usuario en cada quest
+        Quest.color,
+        Quest.image,
+        func.count(Post.id).label("posts_count") 
     ).outerjoin(
-        Post, (Post.quest_id == Quest.id) & (Post.user_id == user_id)  # Usamos outerjoin para incluir quests sin posts del usuario
+        Post, (Post.quest_id == Quest.id) & (Post.user_id == user_id)  
     ).group_by(
         Quest.id
     ).filter(Quest.event_id == event_id).all()
 
-# Mapeamos los resultados y añadimos `is_completed`
     quests_with_status = [
         QuestUser(
             id=quest.id,
             name=quest.name,
             description=quest.description,
-            is_completed=quest.posts_count > 0  # Si tiene al menos un post, se marca como completada
+            is_completed=quest.posts_count > 0,
+            color=quest.color,
+            image=quest.image,
         )
         for quest in all_quests
     ]
 
+    quests_with_status.sort(key=lambda x: x.is_completed)
+
     return quests_with_status
+
 
 def delete_quest(db: Session, quest_id: UUID):
     quest = db.query(Quest).filter(Quest.id == quest_id).first()

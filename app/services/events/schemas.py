@@ -22,6 +22,8 @@ class QuestLK(BaseModel):
     id: UUID
     name: str
     description: str
+    color: Optional[str]
+    image: Optional[str]
     
 class QuestUser(QuestLK):
     is_completed: bool
@@ -45,7 +47,7 @@ class EventCreate(BaseModel):
 
 class EventUpdate(BaseModel):
     name: Optional[str] = None
-    descriptio: Optional[str] = None
+    description: Optional[str] = None
     starts_at: Optional[datetime] = None
     ends_at: Optional[datetime] = None
     is_active: Optional[bool] = None
