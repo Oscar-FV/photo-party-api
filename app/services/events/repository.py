@@ -1,5 +1,6 @@
 import logging
 import random
+from typing import List
 from celery import shared_task
 from celery.result import AsyncResult
 from sqlalchemy import func
@@ -75,6 +76,14 @@ def create_quest(db: Session, quest_data):
     db.commit()
     db.refresh(new_quest)
     return new_quest
+
+def create_bulk_quests(db: Session, quests_data: List[dict]):
+    new_quests = [Quest(**quest.dict()) for quest in quests_data]
+    db.add_all(new_quests)
+    db.commit()
+    for quest in new_quests:
+        db.refresh(quest)
+    return new_quests
 
 def get_quests_by_event(db: Session, event_id: UUID):
     return db.query(Quest).filter(Quest.event_id == event_id).all()

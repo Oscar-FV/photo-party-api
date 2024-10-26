@@ -29,7 +29,8 @@ origins = [
     "http://localhost",
     "http://localhost:8000",
     "http://localhost:3000",
-    "https://bcea-187-245-73-217.ngrok-free.app" 
+    "https://2cb6-187-245-73-217.ngrok-free.app",
+    "https://photo-party.vercel.app" 
 ]
 
 app.add_middleware(
@@ -44,23 +45,23 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 logging.basicConfig(level=logging.INFO)
 
-@app.on_event("startup")
-@repeat_every(seconds=60)  # Revisa cada 60 segundos
-def activate_events_task():
+# @app.on_event("startup")
+# @repeat_every(seconds=60)  # Revisa cada 60 segundos
+# def activate_events_task():
     
-    # Crear manualmente la sesión de la base de datos
-    db: Session = SessionLocal()
+#     # Crear manualmente la sesión de la base de datos
+#     db: Session = SessionLocal()
     
-    try:
-        # Obtener eventos que deben empezar en este momento
-        events = get_events_starting_now(db)
+#     try:
+#         # Obtener eventos que deben empezar en este momento
+#         events = get_events_starting_now(db)
         
-        for event in events:
-            event.is_active = True
-            db.commit()
+#         for event in events:
+#             event.is_active = True
+#             db.commit()
     
-    finally:
-        db.close() 
+#     finally:
+#         db.close() 
 
 @app.get("/me")
 def read_users_me(current_user: CurrentUser = Depends(get_current_user)):

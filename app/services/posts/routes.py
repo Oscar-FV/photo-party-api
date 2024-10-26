@@ -35,7 +35,7 @@ async def save_image(
 ):
     try:
         file_extension = file.filename.split(".")[-1]
-        if file_extension not in ("png", "jpg", "jpeg", "gif"):
+        if file_extension not in ("png", "jpg", "jpeg", "JPEG", "jfif", "gif", "heic", "heif", "webp"):
             raise HTTPException(status_code=400, detail="Invalid file format")
 
         image_filename = f"{uuid.uuid4()}.{file_extension}"

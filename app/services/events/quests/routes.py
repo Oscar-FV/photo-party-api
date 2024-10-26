@@ -5,7 +5,7 @@ from uuid import UUID
 
 from app.core.db import get_db
 from app.services.users.schemas import CurrentUser
-from ..repository import create_quest, get_all_quests_with_completion_status, get_quests_by_event, delete_quest, get_quests_by_id
+from ..repository import create_bulk_quests, create_quest, get_all_quests_with_completion_status, get_quests_by_event, delete_quest, get_quests_by_id
 from ..schemas import QuestCreate, QuestResponse, QuestUser
 from app.core.security import get_current_user
 
@@ -21,6 +21,16 @@ def create_quest_route(
     current_user: CurrentUser = Depends(get_current_user),
 ):
     return create_quest(db, quest.dict())
+
+@router.post("/bulk", response_model=List[QuestResponse])
+def create_bulk_quests_route(
+    quests_data: List[QuestCreate],  # lista directa de QuestCreate
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    created_quests = create_bulk_quests(db, quests_data)  # pasa quests_data directamente
+    return created_quests
+
 
 
 @router.get("", response_model=List[QuestResponse])
